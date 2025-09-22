@@ -68,4 +68,31 @@ userSchema.methods.matchPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
+userSchema.methods.generateAccessToken = function () {
+    const payload = {
+        _id: this._id,
+        username: this.username,
+        fullName: this.fullName,
+        email: this.email,
+    };
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+    const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRY;
+
+    return jwt.sign(payload, accessTokenSecret, {
+        expiresIn: accessTokenExpiry,
+    });
+};
+
+userSchema.methods.generateRefreshToken = function () {
+    const payload = {
+        _id: this._id,
+    };
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+    const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRY;
+
+    return jwt.sign(payload, refreshTokenSecret, {
+        expiresIn: refreshTokenExpiry,
+    });
+};
+
 export const User = model("User", userSchema);
