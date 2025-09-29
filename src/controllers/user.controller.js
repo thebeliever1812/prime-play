@@ -34,10 +34,6 @@ export const handleRegisterUser = async (req, res) => {
         throw new ApiError(400, "You are already a logged in user");
     }
 
-    if (!req.body) {
-        throw new ApiError(400, "Request body is missing");
-    }
-
     const { username, fullName, email, password } = req.body;
 
     if (
@@ -115,10 +111,6 @@ export const handleLoginUser = async (req, res) => {
         throw new ApiError(400, "You are already a logged in user");
     }
 
-    if (!req.body) {
-        throw new ApiError(400, "Request body is missing");
-    }
-
     const { email, password } = req.body;
 
     if ([email, password].some((field) => !field || field.trim() === "")) {
@@ -126,7 +118,7 @@ export const handleLoginUser = async (req, res) => {
     }
 
     // Validation
-    const result = UserLoginSchema.safeParse(email, password);
+    const result = UserLoginSchema.safeParse({ email, password });
 
     if (!result.success) {
         throw new ApiError(
@@ -183,9 +175,7 @@ export const handleLogoutUser = async (req, res) => {
 
     await User.updateOne(
         { _id: req.user._id },
-        {
-            $set: { refreshToken: undefined },
-        }
+        { $unset: { refreshToken: "" } }
     );
 
     const options = {
