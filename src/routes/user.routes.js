@@ -1,9 +1,13 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { handleRegisterUser } from "../controllers/user.controller.js";
-import {upload} from "../middlewares/multer.middleware.js"
+import {
+    handleLoginUser,
+    handleRegisterUser,
+    handleLogoutUser,
+} from "../controllers/user.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
-const router = Router()
+const router = Router();
 
 router.route("/register").post(
     upload.fields([
@@ -19,4 +23,8 @@ router.route("/register").post(
     asyncHandler(handleRegisterUser)
 );
 
-export default router
+router.route("/login").post(asyncHandler(handleLoginUser));
+
+router.route("/logout").post(asyncHandler(handleLogoutUser));
+
+export default router;

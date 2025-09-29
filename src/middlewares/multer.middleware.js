@@ -2,10 +2,10 @@ import multer from "multer";
 import { v4 as secure } from "@lukeed/uuid/secure";
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (_req, file, cb) {
         cb(null, "./public/temp");
     },
-    filename: function (req, file, cb) {
+    filename: function (_req, file, cb) {
         cb(null, secure() + "-" + file.originalname);
     },
 });

@@ -1,6 +1,14 @@
 import * as z from "zod";
 
-export const UserSignupSchema = z.object({
+export const emailValidation = z.email();
+
+export const passwordValidation = z
+    .string()
+    .trim()
+    .min(6, { message: "Must be at least 6 characters" })
+    .max(10, { message: "Must not exceed 10 characters" });
+
+export const UserRegisterSchema = z.object({
     username: z
         .string()
         .lowercase()
@@ -19,10 +27,6 @@ export const UserSignupSchema = z.object({
             message:
                 "Full name must start with a capital letter and can include multiple capitalized words (e.g., 'Basir Ahmad')",
         }),
-    email: z.email(),
-    password: z
-        .string()
-        .trim()
-        .min(6, { message: "Must be at least 6 characters" })
-        .max(10, { message: "Must not exceed 10 characters" }),
+    email: emailValidation,
+    password: passwordValidation,
 });
