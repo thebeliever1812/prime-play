@@ -4,6 +4,7 @@ import { UserRegisterSchema } from "../schemas/userRegister.schema.js";
 import { UserLoginSchema } from "../schemas/userLogin.schema.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefreshTokens = async (userId) => {
     if (!userId) {
@@ -187,4 +188,40 @@ export const handleLogoutUser = async (req, res) => {
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, "Logout Successfull"));
+};
+
+export const refreshAccessToken = async (req, res) => {
+    if (req.user) {
+        throw new ApiError(401, "Access token not expired");
+    }
+
+    const currentRefreshToken =
+        req.cookies.refreshToken || req.body.refreshToken;
+
+    if (!currentRefreshToken) {
+        throw new ApiError(404, "Refresh token not found, please login again");
+    }
+
+    try {
+        const isVerifiedRefreshToken = jwt.verify(
+            currentRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+    
+        const userId = isVerifiedRefreshToken._id;
+    
+        const user = await User.findById(userId);
+    
+        if (!user) {
+            throw new ApiError(404, "User not found for this refresh token");
+        }
+    
+        if (currentRefreshToken !== user.refreshToken) {
+            throw new ApiError(401, "Unauthorized: Refresh token does not match");
+        }
+
+        
+    } catch (error) {
+        throw new ApiError(401, "Invalid or expired token")
+    }
 };
