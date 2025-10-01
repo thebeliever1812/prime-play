@@ -4,6 +4,7 @@ import {
     handleLoginUser,
     handleRegisterUser,
     handleLogoutUser,
+    refreshAccessToken
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -26,5 +27,7 @@ router.route("/register").post(
 router.route("/login").post(asyncHandler(handleLoginUser));
 
 router.route("/logout").post(asyncHandler(handleLogoutUser));
+
+router.route("/refresh-token").post(asyncHandler(refreshAccessToken));
 
 export default router;
