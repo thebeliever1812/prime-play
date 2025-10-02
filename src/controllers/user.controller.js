@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { UserRegisterSchema } from "../schemas/userRegister.schema.js";
 import { UserLoginSchema } from "../schemas/userLogin.schema.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteImageFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { UserPasswordSchema } from "../schemas/userPassword.schema.js";
 
@@ -84,22 +84,29 @@ export const handleRegisterUser = async (req, res) => {
     const coverImageLocalFilePath = coverImage[0]?.path;
 
     let avatarUrl;
+    let avatarImageId;
     let coverImageUrl;
+    let coverImageId;
 
     if (avatarLocalFilePath) {
-        avatarUrl = (await uploadOnCloudinary(avatarLocalFilePath)).secure_url;
+        const avatarResponse = await uploadOnCloudinary(avatarLocalFilePath)
+        avatarUrl = avatarResponse.secure_url
+        avatarImageId = avatarResponse.public_id
     }
 
     if (coverImageLocalFilePath) {
-        coverImageUrl = (await uploadOnCloudinary(coverImageLocalFilePath))
-            .secure_url;
+        const coverImageResponse = await uploadOnCloudinary(coverImageLocalFilePath)
+        coverImageUrl = coverImageResponse.secure_url;
+        coverImageId = coverImageResponse.public_id;
     }
 
     // Create user account
     const newUser = await User.create({
         ...validatedData,
         avatar: avatarUrl,
+        avatarImageId,
         coverImage: coverImageUrl,
+        coverImageId
     });
 
     if (!newUser) {
@@ -323,6 +330,20 @@ export const handleUpdateAvatar = async (req, res) => {
 
     if (!newAvatarLocalFilePath) {
         throw new ApiError(400, "Avatar file path not found");
+    }
+
+    const user = await User.findById(req.user?._id)
+
+    if (!user) {
+        throw new ApiError(404, "User not found when deleting old avatar image")
+    }
+
+    const oldAvatarImageId = user?.avatarImageId
+
+    const isDeletedAvatar = await deleteImageFileFromCloudinary(oldAvatarImageId)
+
+    if (isDeletedAvatar.result !== "ok") {
+        throw new ApiError(400, "Failed to delete old avatar");
     }
 
     const result = await uploadOnCloudinary(newAvatarLocalFilePath);

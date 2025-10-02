@@ -34,9 +34,15 @@ const UserSchema = new Schema(
             type: String,
             default: "/default_avatar.jpg",
         },
+        avatarImageId: {
+            type: String,
+        },
         coverImage: {
             type: String,
             default: "/default_cover_image.jpeg",
+        },
+        coverImageId: {
+            type: String,
         },
         watchHistory: [
             {
