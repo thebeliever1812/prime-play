@@ -4,11 +4,16 @@ import {
     handleLoginUser,
     handleRegisterUser,
     handleLogoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    handleChangePassword,
+    handleGetCurrentUser,
+    handleUpdateAvatar,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
+
+router.route("/").get(asyncHandler(handleGetCurrentUser));
 
 router.route("/register").post(
     upload.fields([
@@ -29,5 +34,11 @@ router.route("/login").post(asyncHandler(handleLoginUser));
 router.route("/logout").post(asyncHandler(handleLogoutUser));
 
 router.route("/refresh-token").post(asyncHandler(refreshAccessToken));
+
+router.route("/change-password").post(asyncHandler(handleChangePassword));
+
+router
+    .route("/update-avatar")
+    .post(upload.single("newAvatar"), asyncHandler(handleUpdateAvatar));
 
 export default router;

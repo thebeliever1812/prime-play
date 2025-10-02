@@ -22,8 +22,11 @@ export const uploadOnCloudinary = async (localFilePath) => {
 
         return result;
     } catch (error) {
-        console.error(error);
         // Unlink file from server after unsuccessful upload also
         fs.unlinkSync(localFilePath);
     }
 };
+
+export const deleteFileFromCloudinary = () => {
+    
+}
