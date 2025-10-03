@@ -8,6 +8,7 @@ import {
     handleChangePassword,
     handleGetCurrentUser,
     handleUpdateAvatar,
+    handleDeleteAvatar,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -35,10 +36,12 @@ router.route("/logout").post(asyncHandler(handleLogoutUser));
 
 router.route("/refresh-token").post(asyncHandler(refreshAccessToken));
 
-router.route("/change-password").post(asyncHandler(handleChangePassword));
+router.route("/change-password").patch(asyncHandler(handleChangePassword));
 
 router
     .route("/update-avatar")
-    .post(upload.single("newAvatar"), asyncHandler(handleUpdateAvatar));
+    .patch(upload.single("newAvatar"), asyncHandler(handleUpdateAvatar));
+
+router.route("/delete-avatar").delete(asyncHandler(handleDeleteAvatar))
 
 export default router;

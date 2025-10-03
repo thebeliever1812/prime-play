@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-const UserSchema = new Schema(
+export const UserSchema = new Schema(
     {
         username: {
             type: String,
@@ -36,6 +36,7 @@ const UserSchema = new Schema(
         },
         avatarImageId: {
             type: String,
+            default: null,
         },
         coverImage: {
             type: String,
@@ -43,6 +44,7 @@ const UserSchema = new Schema(
         },
         coverImageId: {
             type: String,
+            default: null,
         },
         watchHistory: [
             {

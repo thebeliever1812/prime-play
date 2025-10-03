@@ -2,8 +2,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { UserRegisterSchema } from "../schemas/userRegister.schema.js";
 import { UserLoginSchema } from "../schemas/userLogin.schema.js";
-import { User } from "../models/user.model.js";
-import { deleteImageFileFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import { User, UserSchema } from "../models/user.model.js";
+import {
+    deleteImageFileFromCloudinary,
+    uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { UserPasswordSchema } from "../schemas/userPassword.schema.js";
 
@@ -80,8 +83,8 @@ export const handleRegisterUser = async (req, res) => {
 
     const { avatar, coverImage } = req.files;
 
-    const avatarLocalFilePath = avatar[0]?.path;
-    const coverImageLocalFilePath = coverImage[0]?.path;
+    const avatarLocalFilePath = avatar?.[0]?.path;
+    const coverImageLocalFilePath = coverImage?.[0]?.path;
 
     let avatarUrl;
     let avatarImageId;
@@ -89,13 +92,15 @@ export const handleRegisterUser = async (req, res) => {
     let coverImageId;
 
     if (avatarLocalFilePath) {
-        const avatarResponse = await uploadOnCloudinary(avatarLocalFilePath)
-        avatarUrl = avatarResponse.secure_url
-        avatarImageId = avatarResponse.public_id
+        const avatarResponse = await uploadOnCloudinary(avatarLocalFilePath);
+        avatarUrl = avatarResponse.secure_url;
+        avatarImageId = avatarResponse.public_id;
     }
 
     if (coverImageLocalFilePath) {
-        const coverImageResponse = await uploadOnCloudinary(coverImageLocalFilePath)
+        const coverImageResponse = await uploadOnCloudinary(
+            coverImageLocalFilePath
+        );
         coverImageUrl = coverImageResponse.secure_url;
         coverImageId = coverImageResponse.public_id;
     }
@@ -106,7 +111,7 @@ export const handleRegisterUser = async (req, res) => {
         avatar: avatarUrl,
         avatarImageId,
         coverImage: coverImageUrl,
-        coverImageId
+        coverImageId,
     });
 
     if (!newUser) {
@@ -332,15 +337,19 @@ export const handleUpdateAvatar = async (req, res) => {
         throw new ApiError(400, "Avatar file path not found");
     }
 
-    const user = await User.findById(req.user?._id)
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
-        throw new ApiError(404, "User not found when deleting old avatar image")
+        throw new ApiError(
+            404,
+            "User not found when deleting old avatar image"
+        );
     }
 
-    const oldAvatarImageId = user?.avatarImageId
+    const oldAvatarImageId = user?.avatarImageId;
 
-    const isDeletedAvatar = await deleteImageFileFromCloudinary(oldAvatarImageId)
+    const isDeletedAvatar =
+        await deleteImageFileFromCloudinary(oldAvatarImageId);
 
     if (isDeletedAvatar.result !== "ok") {
         throw new ApiError(400, "Failed to delete old avatar");
@@ -359,4 +368,41 @@ export const handleUpdateAvatar = async (req, res) => {
     });
 
     res.status(201).json(new ApiResponse(201, "Avatar updated successfully"));
+};
+
+export const handleDeleteAvatar = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(401, "Unauthorized, please login to delete avatar");
+    }
+
+    const user = await User.findById(req.user?._id).select(
+        "-password -refreshToken"
+    );
+
+    if (!user) {
+        throw new ApiError(404, "User not found while deleting avatar");
+    }
+
+    const avatarImageId = user?.avatarImageId;
+
+    if (!avatarImageId) {
+        throw new ApiError(400, "User has no avatar to delete");
+    }
+
+    const isDeletedAvatar = await deleteImageFileFromCloudinary(avatarImageId);
+
+    console.log(isDeletedAvatar);
+
+    if (isDeletedAvatar.result !== "ok") {
+        throw new ApiError(500, "Failed to delete the avatar");
+    }
+
+    const defaultAvatar = UserSchema.path("avatar").options.default;
+
+    await User.updateOne(
+        { _id: user?._id },
+        { $set: { avatarImageId: null, avatar: defaultAvatar } }
+    );
+
+    res.status(200).json(new ApiResponse(200, "Avatar deleted successfully"));
 };
