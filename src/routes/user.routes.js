@@ -12,6 +12,7 @@ import {
     handleUpdateCoverImage,
     handleDeleteCoverImage,
     handleGetUserChannelProfile,
+    handleWatchHistory,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -49,10 +50,19 @@ router.route("/delete-avatar").delete(asyncHandler(handleDeleteAvatar));
 
 router
     .route("/update-cover-image")
-    .patch(upload.single("newCoverImage"), asyncHandler(handleUpdateCoverImage));
+    .patch(
+        upload.single("newCoverImage"),
+        asyncHandler(handleUpdateCoverImage)
+    );
 
-router.route("/delete-cover-image").delete(asyncHandler(handleDeleteCoverImage));
+router
+    .route("/delete-cover-image")
+    .delete(asyncHandler(handleDeleteCoverImage));
 
-router.route("/channel-profile").get(asyncHandler(handleGetUserChannelProfile))
+router
+    .route("/channel/:username")
+    .get(asyncHandler(handleGetUserChannelProfile));
+
+router.route("/history").get(asyncHandler(handleWatchHistory));
 
 export default router;

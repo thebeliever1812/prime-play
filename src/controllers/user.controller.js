@@ -12,6 +12,7 @@ import {
     uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     if (!userId) {
@@ -505,6 +506,13 @@ export const handleDeleteCoverImage = async (req, res) => {
 };
 
 export const handleGetUserChannelProfile = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to get channel details"
+        );
+    }
+
     const { username } = req.params;
 
     if (!username?.trim()) {
@@ -583,6 +591,67 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 200,
                 "User channel fetched successfully",
                 channel[0]
+            )
+        );
+};
+
+export const handleWatchHistory = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to get watch history"
+        );
+    }
+
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(String(req.user._id)),
+            },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner",
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    ]);
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                "Watch history fetched successfully",
+                user[0].watchHistory
             )
         );
 };
