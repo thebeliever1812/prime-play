@@ -9,6 +9,9 @@ import {
     handleGetCurrentUser,
     handleUpdateAvatar,
     handleDeleteAvatar,
+    handleUpdateCoverImage,
+    handleDeleteCoverImage,
+    handleGetUserChannelProfile,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -42,6 +45,14 @@ router
     .route("/update-avatar")
     .patch(upload.single("newAvatar"), asyncHandler(handleUpdateAvatar));
 
-router.route("/delete-avatar").delete(asyncHandler(handleDeleteAvatar))
+router.route("/delete-avatar").delete(asyncHandler(handleDeleteAvatar));
+
+router
+    .route("/update-cover-image")
+    .patch(upload.single("newCoverImage"), asyncHandler(handleUpdateCoverImage));
+
+router.route("/delete-cover-image").delete(asyncHandler(handleDeleteCoverImage));
+
+router.route("/channel-profile").get(asyncHandler(handleGetUserChannelProfile))
 
 export default router;

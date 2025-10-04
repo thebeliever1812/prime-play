@@ -8,8 +8,7 @@ export const passwordValidation = z
     .min(6, { message: "Must be at least 6 characters" })
     .max(10, { message: "Must not exceed 10 characters" });
 
-export const UserRegisterSchema = z.object({
-    username: z
+export const usernameValidation = z
         .string()
         .lowercase()
         .trim()
@@ -18,7 +17,10 @@ export const UserRegisterSchema = z.object({
         .regex(/^[a-z0-9_]+$/, {
             message:
                 "Username must be lowercase and contain only letters, numbers, or underscores (no spaces)",
-        }),
+        })
+
+export const UserRegisterSchema = z.object({
+    username: usernameValidation,
     fullName: z
         .string()
         .trim()

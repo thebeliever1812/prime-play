@@ -1,14 +1,17 @@
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { UserRegisterSchema } from "../schemas/userRegister.schema.js";
-import { UserLoginSchema } from "../schemas/userLogin.schema.js";
+import {
+    UserRegisterSchema,
+    UserLoginSchema,
+    UserPasswordSchema,
+    UsernameSchema,
+} from "../schemas/index.js";
 import { User, UserSchema } from "../models/user.model.js";
 import {
     deleteImageFileFromCloudinary,
     uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
-import { UserPasswordSchema } from "../schemas/userPassword.schema.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     if (!userId) {
@@ -391,8 +394,6 @@ export const handleDeleteAvatar = async (req, res) => {
 
     const isDeletedAvatar = await deleteImageFileFromCloudinary(avatarImageId);
 
-    console.log(isDeletedAvatar);
-
     if (isDeletedAvatar.result !== "ok") {
         throw new ApiError(500, "Failed to delete the avatar");
     }
@@ -405,4 +406,183 @@ export const handleDeleteAvatar = async (req, res) => {
     );
 
     res.status(200).json(new ApiResponse(200, "Avatar deleted successfully"));
+};
+
+export const handleUpdateCoverImage = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, Please login to update cover image"
+        );
+    }
+
+    const newCoverImage = req.file;
+
+    if (!newCoverImage) {
+        throw new ApiError(400, "Cover image required");
+    }
+
+    const newCoverImageLocalFilePath = newCoverImage?.path;
+
+    if (!newCoverImageLocalFilePath) {
+        throw new ApiError(400, "Cover image file path not found");
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found while deleting old cover image"
+        );
+    }
+
+    const oldCoverImageId = user?.coverImageId;
+
+    const isDeletedCoverImage =
+        await deleteImageFileFromCloudinary(oldCoverImageId);
+
+    if (isDeletedCoverImage.result !== "ok") {
+        throw new ApiError(400, "Failed to delete old cover image");
+    }
+
+    const result = await uploadOnCloudinary(newCoverImageLocalFilePath);
+
+    if (!result) {
+        throw new ApiError(500, "Upload failed, please try again");
+    }
+
+    const newCoverImageUrl = result?.secure_url;
+
+    await User.findByIdAndUpdate(req.user?._id, {
+        $set: { coverImage: newCoverImageUrl },
+    });
+
+    res.status(201).json(
+        new ApiResponse(201, "Cover image updated successfully")
+    );
+};
+
+export const handleDeleteCoverImage = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to delete cover image"
+        );
+    }
+
+    const user = await User.findById(req.user?._id).select(
+        "-password -refreshToken"
+    );
+
+    if (!user) {
+        throw new ApiError(404, "User not found while deleting cover image");
+    }
+
+    const coverImageId = user?.coverImageId;
+
+    if (!coverImageId) {
+        throw new ApiError(400, "User has no cover image to delete");
+    }
+
+    const isDeletedCoverImage =
+        await deleteImageFileFromCloudinary(coverImageId);
+
+    if (isDeletedCoverImage.result !== "ok") {
+        throw new ApiError(500, "Failed to delete the cover image");
+    }
+
+    const defaultCoverImage = UserSchema.path("coverImage").options.default;
+
+    await User.updateOne(
+        { _id: user?._id },
+        { $set: { coverImageId: null, coverImage: defaultCoverImage } }
+    );
+
+    res.status(200).json(
+        new ApiResponse(200, "Cover image deleted successfully")
+    );
+};
+
+export const handleGetUserChannelProfile = async (req, res) => {
+    const { username } = req.params;
+
+    if (!username?.trim()) {
+        throw new ApiError(400, "Username is missing");
+    }
+
+    const result = UsernameSchema.safeParse(username);
+
+    if (!result.success) {
+        throw new ApiError(400, `Username ${result.error.issues[0]?.message}`);
+    }
+
+    const validatedUsername = result.data.username;
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: validatedUsername,
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo",
+            },
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers",
+                },
+                channelsSubscribedToCount: {
+                    $size: "$subscribedTo",
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false,
+                    },
+                },
+            },
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1,
+            },
+        },
+    ]);
+
+    if (!channel?.length) {
+        throw new ApiError(404, "Channel does not exists");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                "User channel fetched successfully",
+                channel[0]
+            )
+        );
 };
