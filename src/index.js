@@ -9,13 +9,14 @@ try {
     await connectMongoDb();
 
     app.on("error", (error) => {
-        console.log("Error in app:", error);
-        throw error;
+        console.error("Server error:", error);
+        process.exit(1);
     });
 
     app.listen(PORT, () =>
         console.log(`Server started at http://localhost:${PORT}`)
     );
 } catch (error) {
-    console.log("MongoDB connection Failed", error);
+    console.error("Startup failed:", error);
+    process.exit(1);
 }
