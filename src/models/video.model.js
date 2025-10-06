@@ -15,7 +15,15 @@ const VideoSchema = new Schema(
             type: String,
             required: true,
         },
+        thumbnailId: {
+            type: String,
+            required: true,
+        },
         videoFile: {
+            type: String,
+            required: true,
+        },
+        videoFileId: {
             type: String,
             required: true,
         },
@@ -23,7 +31,7 @@ const VideoSchema = new Schema(
             type: Number, // Cloudinary se info le lege
             required: true,
         },
-        duration: {
+        views: {
             type: Number,
             default: 0,
         },
