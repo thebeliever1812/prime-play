@@ -7,8 +7,10 @@ const app = express();
 
 global.cookieOptions = {
     httpOnly: true,
-    secure: true
-}
+    secure: true,
+    sameSite: "none",
+    path: "/",
+};
 
 app.use(
     cors({
