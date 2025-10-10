@@ -7,7 +7,7 @@ const app = express();
 
 global.cookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: false,
     sameSite: "none",
     path: "/",
 };
