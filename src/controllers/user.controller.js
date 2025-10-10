@@ -85,7 +85,7 @@ export const handleRegisterUser = async (req, res) => {
         throw new ApiError(409, "Email or username already exist");
     }
 
-    const { avatar, coverImage } = req.files;
+    const { avatar, coverImage } = req.files || {};
 
     const avatarLocalFilePath = avatar?.[0]?.path;
     const coverImageLocalFilePath = coverImage?.[0]?.path;
