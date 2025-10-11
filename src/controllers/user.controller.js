@@ -173,8 +173,8 @@ export const handleLoginUser = async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, global.cookieOptions)
-        .cookie("refreshToken", refreshToken, global.cookieOptions)
+        .cookie("accessToken", accessToken, global.accessTokenCookieOptions)
+        .cookie("refreshToken", refreshToken, global.refreshTokenCookieOptions)
         .json(new ApiResponse(200, "Login successful"));
 };
 
@@ -189,8 +189,8 @@ export const handleLogoutUser = async (req, res) => {
     );
 
     res.status(200)
-        .clearCookie("accessToken", global.cookieOptions)
-        .clearCookie("refreshToken", global.cookieOptions)
+        .clearCookie("accessToken", global.accessTokenCookieOptions)
+        .clearCookie("refreshToken", global.refreshTokenCookieOptions)
         .json(new ApiResponse(200, "Logout Successfull"));
 };
 
@@ -231,8 +231,12 @@ export const refreshAccessToken = async (req, res) => {
             await generateAccessAndRefreshTokens(user._id);
 
         res.status(200)
-            .cookie("accessToken", accessToken, global.cookieOptions)
-            .cookie("refreshToken", newRefreshToken, global.cookieOptions)
+            .cookie("accessToken", accessToken, global.accessTokenCookieOptions)
+            .cookie(
+                "refreshToken",
+                newRefreshToken,
+                global.refreshTokenCookieOptions
+            )
             .json(new ApiResponse(200, "Access token updated"));
     } catch (error) {
         if (error instanceof ApiError) {
