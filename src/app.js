@@ -7,7 +7,7 @@ const app = express();
 
 global.accessTokenCookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: false,
     sameSite: "none",
     path: "/",
     maxAge: 24 * 60 * 60,
@@ -15,7 +15,7 @@ global.accessTokenCookieOptions = {
 
 global.refreshTokenCookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: false,
     sameSite: "none",
     path: "/",
     maxAge: 10 * 24 * 60 * 60,
