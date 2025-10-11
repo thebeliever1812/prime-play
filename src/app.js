@@ -10,7 +10,7 @@ global.accessTokenCookieOptions = {
     secure: true,
     sameSite: "none",
     path: "/",
-    maxAge: 24 * 60 * 60,
+    maxAge: 24 * 60 * 60 * 1000,
 };
 
 global.refreshTokenCookieOptions = {
@@ -18,7 +18,7 @@ global.refreshTokenCookieOptions = {
     secure: true,
     sameSite: "none",
     path: "/",
-    maxAge: 10 * 24 * 60 * 60,
+    maxAge: 10 * 24 * 60 * 60 * 1000,
 };
 
 app.use(
