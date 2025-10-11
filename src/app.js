@@ -7,16 +7,16 @@ const app = express();
 
 global.accessTokenCookieOptions = {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: true,
+    sameSite: "lax",
     path: "/",
     maxAge: 24 * 60 * 60,
 };
 
 global.refreshTokenCookieOptions = {
     httpOnly: true,
-    secure: false,
-    sameSite: "none",
+    secure: true,
+    sameSite: "lax",
     path: "/",
     maxAge: 10 * 24 * 60 * 60,
 };
