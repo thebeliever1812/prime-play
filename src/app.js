@@ -5,7 +5,7 @@ import { verifyJWT } from "./middlewares/auth.middleware.js";
 
 const app = express();
 
-const isProduction = process.emv.NODE_ENV === "production"
+const isProduction = process.env.NODE_ENV === "production"
 
 global.accessTokenCookieOptions = {
     httpOnly: true,
