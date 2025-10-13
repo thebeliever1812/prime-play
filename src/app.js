@@ -39,10 +39,13 @@ app.use(verifyJWT);
 // routes import
 import userRouter from "./routes/user.routes.js";
 import videoRouter from "./routes/video.routes.js";
+import authRouter from "./routes/auth.routes.js"
 
 // routes declaration
 app.use("/api/v1/user", userRouter);
 
 app.use("/api/v1/video", videoRouter);
+
+app.use("/api/v1/auth", authRouter)
 
 export default app;
