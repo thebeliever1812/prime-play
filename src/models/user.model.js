@@ -82,6 +82,8 @@ UserSchema.methods.generateAccessToken = function () {
         username: this.username,
         fullName: this.fullName,
         email: this.email,
+        avatar: this.avatar,
+        coverImage: this.coverImage
     };
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
     const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRY;
