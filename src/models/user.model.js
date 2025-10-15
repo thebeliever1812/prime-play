@@ -32,7 +32,7 @@ export const UserSchema = new Schema(
         },
         avatar: {
             type: String,
-            default: "/default_avatar.jpg",
+            default: "/default_avatar.png",
         },
         avatarImageId: {
             type: String,

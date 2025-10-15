@@ -21,6 +21,8 @@ export const verifyJWT =(req, _res, next) => {
             username: isVerifiedAccessToken?.username,
             fullName: isVerifiedAccessToken?.fullName,
             email: isVerifiedAccessToken?.email,
+            avatar: isVerifiedAccessToken?.avatar,
+            coverImage: isVerifiedAccessToken?.coverImage
         };
 
         next();
