@@ -5,20 +5,20 @@ import { verifyJWT } from "./middlewares/auth.middleware.js";
 
 const app = express();
 
-const isProduction = process.env.NODE_ENV === "production";
+// const isProduction = process.env.NODE_ENV === "production";
 
 global.accessTokenCookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",
     maxAge: 24 * 60 * 60 * 1000,
 };
 
 global.refreshTokenCookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite:"none" ,
     path: "/",
     maxAge: 10 * 24 * 60 * 60 * 1000,
 };
