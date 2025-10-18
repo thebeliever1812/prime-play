@@ -25,7 +25,11 @@ global.refreshTokenCookieOptions = {
 
 app.use(
     cors({
-        origin: [process.env.FRONTEND_URL_LOCAL, process.env.FRONTEND_URL_PROD],
+        origin: [
+            process.env.FRONTEND_URL_LOCAL,
+            process.env.FRONTEND_URL_PROD,
+            "https://3tkg6xtw-3000.inc1.devtunnels.ms",
+        ],
         credentials: true,
     })
 );
