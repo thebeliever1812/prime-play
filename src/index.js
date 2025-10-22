@@ -3,7 +3,7 @@ import "@dotenvx/dotenvx/config";
 import app from "./app.js";
 import { connectMongoDb } from "./db/index.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 try {
     await connectMongoDb();

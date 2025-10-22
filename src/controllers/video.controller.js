@@ -12,7 +12,7 @@ export const handleUploadVideo = async (req, res) => {
     const { title, description } = req.body;
 
     if ([title, description].some((field) => !field?.trim())) {
-        throw new ApiError(400, "All fileds are required");
+        throw new ApiError(400, "All fields are required");
     }
 
     const result = VideoUploadSchema.safeParse({ title, description });
