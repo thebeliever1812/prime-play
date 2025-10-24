@@ -46,6 +46,12 @@ export const UserSchema = new Schema(
             type: String,
             default: null,
         },
+        myVideos: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Video",
+            },
+        ],
         watchHistory: [
             {
                 type: Schema.Types.ObjectId,

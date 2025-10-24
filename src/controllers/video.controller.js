@@ -1,4 +1,5 @@
 import { Video } from "../models/video.model.js";
+import { User } from "../models/user.model.js";
 import { VideoUploadSchema } from "../schemas/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -83,6 +84,16 @@ export const handleUploadVideo = async (req, res) => {
     if (!video) {
         throw new ApiError(500, "Failed to create video in database");
     }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found while uploading video")
+    }
+
+    user.myVideos.push(video._id);
+
+    await user.save({ validateBeforeSave: false });
 
     res.status(201).json(new ApiResponse(201, "Video uploaded successfully"));
 };
