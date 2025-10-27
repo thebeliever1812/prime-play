@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { handleUploadVideo } from "../controllers/video.controller.js";
+import {
+    handleUploadVideo,
+    handleGetMyVideos,
+} from "../controllers/video.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
@@ -18,5 +21,7 @@ router.route("/upload-video").post(
     ]),
     asyncHandler(handleUploadVideo)
 );
+
+router.route("/my-videos").get(asyncHandler(handleGetMyVideos));
 
 export default router;

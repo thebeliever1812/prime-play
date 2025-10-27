@@ -97,3 +97,31 @@ export const handleUploadVideo = async (req, res) => {
 
     res.status(201).json(new ApiResponse(201, "Video uploaded successfully"));
 };
+
+export const handleGetMyVideos = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(401, "Unauthorized, Please login to view your videos");
+    }
+
+    const videos = await Video.aggregate([
+        {
+            $match: { owner: req.user._id },
+        },
+        {
+            $sort: { createdAt: -1 },
+        },
+        {
+            $project: {
+                title: 1,
+                description: 1,
+                thumbnail: 1,
+                videoFile: 1,
+                duration: 1,
+                createdAt: 1,
+                views: 1,
+            }
+        }
+    ]);
+
+    res.status(200).json(new ApiResponse(200, "Videos fetched successfully", videos));
+};
