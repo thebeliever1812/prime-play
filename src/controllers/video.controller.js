@@ -4,6 +4,7 @@ import { VideoUploadSchema } from "../schemas/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
 
 export const handleUploadVideo = async (req, res) => {
     if (!req.user) {
@@ -102,10 +103,11 @@ export const handleGetMyVideos = async (req, res) => {
     if (!req.user) {
         throw new ApiError(401, "Unauthorized, Please login to view your videos");
     }
+    console.log("Fetching videos for user:", req.user._id);
 
     const videos = await Video.aggregate([
         {
-            $match: { owner: req.user._id },
+            $match: { owner: new mongoose.Types.ObjectId(req.user._id) },
         },
         {
             $sort: { createdAt: -1 },
