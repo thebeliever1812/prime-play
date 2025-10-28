@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
     handleUploadVideo,
     handleGetMyVideos,
+    handlePlayVideo,
 } from "../controllers/video.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -23,5 +24,7 @@ router.route("/upload-video").post(
 );
 
 router.route("/my-videos").get(asyncHandler(handleGetMyVideos));
+
+router.route("/play-video/:videoId").get(asyncHandler(handlePlayVideo));
 
 export default router;
