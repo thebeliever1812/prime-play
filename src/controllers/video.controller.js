@@ -89,7 +89,7 @@ export const handleUploadVideo = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-        throw new ApiError(404, "User not found while uploading video")
+        throw new ApiError(404, "User not found while uploading video");
     }
 
     user.myVideos.push(video._id);
@@ -101,7 +101,10 @@ export const handleUploadVideo = async (req, res) => {
 
 export const handleGetMyVideos = async (req, res) => {
     if (!req.user) {
-        throw new ApiError(401, "Unauthorized, Please login to view your videos");
+        throw new ApiError(
+            401,
+            "Unauthorized, Please login to view your videos"
+        );
     }
     console.log("Fetching videos for user:", req.user._id);
 
@@ -121,9 +124,64 @@ export const handleGetMyVideos = async (req, res) => {
                 duration: 1,
                 createdAt: 1,
                 views: 1,
-            }
-        }
+            },
+        },
     ]);
 
-    res.status(200).json(new ApiResponse(200, "Videos fetched successfully", videos));
+    res.status(200).json(
+        new ApiResponse(200, "Videos fetched successfully", videos)
+    );
+};
+
+export const handlePlayVideo = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(401, "Unauthorized, Please login to play video");
+    }
+
+    const { videoId } = req.params;
+
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required");
+    }
+
+    const video = await Video.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(videoId) },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+            },
+        },
+        {
+            $unwind: "$owner",
+        },
+        {
+            $project: {
+                title: 1,
+                description: 1,
+                videoFile: 1,
+                duration: 1,
+                createdAt: 1,
+                views: 1,
+                owner: {
+                    _id: 1,
+                    username: 1,
+                    fullName: 1,
+                    avatar: 1,
+                },
+            },
+        },
+    ]);
+
+    if (!video || video.length === 0) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, "Video fetched successfully", video[0])
+    );
 };
