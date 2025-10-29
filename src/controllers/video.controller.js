@@ -185,14 +185,7 @@ export const handlePlayVideo = async (req, res) => {
     );
 };
 
-export const handleGetAllVideos = async (req, res) => {
-    if (!req.user) {
-        throw new ApiError(
-            401,
-            "Unauthorized, Please login to view your videos"
-        );
-    }
-
+export const handleGetAllVideos = async (_req, res) => {
     const videos = await Video.aggregate([
         {
             $lookup: {
