@@ -214,7 +214,7 @@ export const handleGetAllVideos = async (req, res) => {
             $project: {
                 title: 1,
                 description: 1,
-                videoFile: 1,
+                thumbnail: 1,
                 duration: 1,
                 createdAt: 1,
                 views: 1,
