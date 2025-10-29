@@ -106,7 +106,6 @@ export const handleGetMyVideos = async (req, res) => {
             "Unauthorized, Please login to view your videos"
         );
     }
-    console.log("Fetching videos for user:", req.user._id);
 
     const videos = await Video.aggregate([
         {
@@ -183,5 +182,57 @@ export const handlePlayVideo = async (req, res) => {
 
     res.status(200).json(
         new ApiResponse(200, "Video fetched successfully", video[0])
+    );
+};
+
+export const handleGetAllVideos = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, Please login to view your videos"
+        );
+    }
+
+    const videos = await Video.aggregate([
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "ownerInfo",
+            },
+        },
+        {
+            $unwind: "$ownerInfo",
+        },
+        {
+            $sort: {
+                createdAt: -1,
+            },
+        },
+        {
+            $project: {
+                title: 1,
+                description: 1,
+                videoFile: 1,
+                duration: 1,
+                createdAt: 1,
+                views: 1,
+                ownerInfo: {
+                    _id: 1,
+                    username: 1,
+                    fullName: 1,
+                    avatar: 1,
+                },
+            },
+        },
+    ]);
+    
+    if (videos.length === 0) {
+        throw new ApiError(404, "No videos found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, "Videos fetched successfully", videos)
     );
 };
