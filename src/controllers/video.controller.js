@@ -133,10 +133,6 @@ export const handleGetMyVideos = async (req, res) => {
 };
 
 export const handlePlayVideo = async (req, res) => {
-    if (!req.user) {
-        throw new ApiError(401, "Unauthorized, Please login to play video");
-    }
-
     const { videoId } = req.params;
 
     if (!videoId) {
