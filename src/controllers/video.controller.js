@@ -139,6 +139,16 @@ export const handlePlayVideo = async (req, res) => {
         throw new ApiError(400, "Video ID is required");
     }
 
+    if (req.user) {
+        const user = await User.findById(req.user._id);
+        if (user) {
+            if (!user.watchHistory.includes(videoId)) {
+                user.watchHistory.push(videoId);
+                await user.save();
+            }
+        }
+    }
+
     const video = await Video.aggregate([
         {
             $match: { _id: new mongoose.Types.ObjectId(videoId) },
@@ -216,7 +226,7 @@ export const handleGetAllVideos = async (_req, res) => {
             },
         },
     ]);
-    
+
     if (videos.length === 0) {
         throw new ApiError(404, "No videos found");
     }
