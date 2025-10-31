@@ -523,7 +523,7 @@ export const handleGetUserChannelProfile = async (req, res) => {
         throw new ApiError(400, "Username is missing");
     }
 
-    const result = UsernameSchema.safeParse(username);
+    const result = UsernameSchema.safeParse({username});
 
     if (!result.success) {
         throw new ApiError(400, `Username ${result.error.issues[0]?.message}`);
