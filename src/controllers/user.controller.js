@@ -510,13 +510,6 @@ export const handleDeleteCoverImage = async (req, res) => {
 };
 
 export const handleGetUserChannelProfile = async (req, res) => {
-    if (!req.user) {
-        throw new ApiError(
-            401,
-            "Unauthorized, please login to get channel details"
-        );
-    }
-
     const { username } = req.params;
 
     if (!username?.trim()) {
