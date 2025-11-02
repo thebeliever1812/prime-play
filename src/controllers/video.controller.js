@@ -109,7 +109,7 @@ export const handleGetMyVideos = async (req, res) => {
 
     const videos = await Video.aggregate([
         {
-            $match: { owner: new mongoose.Types.ObjectId(req.user._id) },
+            $match: { owner: new mongoose.ObjectId(req.user._id) },
         },
         {
             $sort: { createdAt: -1 },
@@ -230,6 +230,43 @@ export const handleGetAllVideos = async (_req, res) => {
     if (videos.length === 0) {
         throw new ApiError(404, "No videos found");
     }
+
+    res.status(200).json(
+        new ApiResponse(200, "Videos fetched successfully", videos)
+    );
+};
+
+export const handleGetChannelVideos = async (req, res) => {
+    const { username } = req.params;
+
+    if (!username) {
+        throw new ApiError(400, "Username is required");
+    }
+    const user = await User.findOne({ username });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const videos = await Video.aggregate([
+        {
+            $match: { owner: new mongoose.ObjectId(user._id) },
+        },
+        {
+            $sort: { createdAt: -1 },
+        },
+        {
+            $project: {
+                title: 1,
+                description: 1,
+                thumbnail: 1,
+                videoFile: 1,
+                duration: 1,
+                createdAt: 1,
+                views: 1,
+            },
+        },
+    ]);
 
     res.status(200).json(
         new ApiResponse(200, "Videos fetched successfully", videos)
