@@ -109,7 +109,7 @@ export const handleGetMyVideos = async (req, res) => {
 
     const videos = await Video.aggregate([
         {
-            $match: { owner: new mongoose.ObjectId(req.user._id) },
+            $match: { owner: new mongoose.Types.ObjectId(req.user._id) },
         },
         {
             $sort: { createdAt: -1 },
@@ -250,7 +250,7 @@ export const handleGetChannelVideos = async (req, res) => {
 
     const videos = await Video.aggregate([
         {
-            $match: { owner: new mongoose.ObjectId(user._id) },
+            $match: { owner: new mongoose.Types.ObjectId(user._id) },
         },
         {
             $sort: { createdAt: -1 },
