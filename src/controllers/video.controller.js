@@ -140,12 +140,14 @@ export const handlePlayVideo = async (req, res) => {
     }
 
     if (req.user) {
-        const user = await User.findById(req.user._id);
-        if (user) {
-            if (!user.watchHistory.includes(videoId)) {
-                user.watchHistory.push(videoId);
-                await user.save();
-            }
+        const userUpdate = await User.updateOne(
+            { _id: req.user._id, watchHistory: { $ne: videoId } }, // match only if not present
+            { $addToSet: { watchHistory: videoId } } // add only if absent
+        );
+
+        // If modifiedCount === 1, the video was added to watchHistory for the first time -> increment views
+        if (userUpdate.modifiedCount === 1) {
+            await Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
         }
     }
 
