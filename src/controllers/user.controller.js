@@ -556,12 +556,7 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 },
                 isSubscribed: {
                     $cond: {
-                        if: {
-                            $in: [
-                                new mongoose.Types.ObjectId(req.user._id),
-                                "$subscribers.subscriber",
-                            ],
-                        },
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
                         then: true,
                         else: false,
                     },
