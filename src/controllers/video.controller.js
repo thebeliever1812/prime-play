@@ -107,6 +107,7 @@ export const handleGetMyVideos = async (req, res) => {
         );
     }
 
+    console.log(req.user);
     const videos = await Video.aggregate([
         {
             $match: { owner: new mongoose.Types.ObjectId(req.user._id) },

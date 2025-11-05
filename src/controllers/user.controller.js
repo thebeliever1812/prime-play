@@ -524,10 +524,6 @@ export const handleGetUserChannelProfile = async (req, res) => {
 
     const validatedUsername = result.data.username;
 
-    const userObjectId = req.user?._id
-        ? new mongoose.Types.ObjectId(req.user._id)
-        : null;
-
     const channel = await User.aggregate([
         {
             $match: {
@@ -555,26 +551,9 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 subscribersCount: { $size: "$subscribers" },
                 channelsSubscribedToCount: { $size: "$subscribedTo" },
                 videosCount: { $size: "$myVideos" },
-
                 isSubscribed: {
                     $cond: {
-                        if: {
-                            $and: [
-                                { $ne: [userObjectId, null] },
-                                {
-                                    $in: [
-                                        userObjectId,
-                                        {
-                                            $map: {
-                                                input: "$subscribers",
-                                                as: "s",
-                                                in: "$$s.subscriber",
-                                            },
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                        if: { $in: [new mongoose.Types.ObjectId(req.user?._id), "$subscribers.subscriber"] },
                         then: true,
                         else: false,
                     },
@@ -607,7 +586,7 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 200,
                 "User channel fetched successfully",
                 channel[0]
-            )
+            )                          
         );
 };
 
