@@ -552,21 +552,25 @@ export const handleGetUserChannelProfile = async (req, res) => {
         },
         {
             $addFields: {
-                subscribersCount: {
-                    $size: "$subscribers",
-                },
-                channelsSubscribedToCount: {
-                    $size: "$subscribedTo",
-                },
+                subscribersCount: { $size: "$subscribers" },
+                channelsSubscribedToCount: { $size: "$subscribedTo" },
+                videosCount: { $size: "$myVideos" },
+
                 isSubscribed: {
                     $cond: {
                         if: {
                             $and: [
-                                { $ne: [userObjectId, null] }, // only check if logged in
+                                { $ne: [userObjectId, null] },
                                 {
                                     $in: [
                                         userObjectId,
-                                        "$subscribers.subscriber",
+                                        {
+                                            $map: {
+                                                input: "$subscribers",
+                                                as: "s",
+                                                in: "$$s.subscriber",
+                                            },
+                                        },
                                     ],
                                 },
                             ],
@@ -574,9 +578,6 @@ export const handleGetUserChannelProfile = async (req, res) => {
                         then: true,
                         else: false,
                     },
-                },
-                videosCount: {
-                    $size: "$myVideos",
                 },
             },
         },
