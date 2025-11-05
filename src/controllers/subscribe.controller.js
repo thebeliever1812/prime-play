@@ -1,6 +1,6 @@
 import { ApiError } from "../utils/ApiError.js";
 import { Subscription } from "../models/subscription.model.js";
-import { ApiResponse } from "../utils/ApiResponse";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 export const handleSubscribeChannel = async (req, res) => {
     if (!req.user) {
