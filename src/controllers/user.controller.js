@@ -524,6 +524,10 @@ export const handleGetUserChannelProfile = async (req, res) => {
 
     const validatedUsername = result.data.username;
 
+    const userObjectId = req.user?._id
+        ? new mongoose.Types.ObjectId(req.user._id)
+        : null;
+
     const channel = await User.aggregate([
         {
             $match: {
@@ -556,7 +560,17 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        if: {
+                            $and: [
+                                { $ne: [userObjectId, null] }, // only check if logged in
+                                {
+                                    $in: [
+                                        userObjectId,
+                                        "$subscribers.subscriber",
+                                    ],
+                                },
+                            ],
+                        },
                         then: true,
                         else: false,
                     },
