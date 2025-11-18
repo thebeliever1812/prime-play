@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
+import { size } from "zod";
 
 export const handleUploadVideo = async (req, res) => {
     if (!req.user) {
@@ -168,6 +169,19 @@ export const handlePlayVideo = async (req, res) => {
             $unwind: "$owner",
         },
         {
+            $lookup: {
+                from: "subscriptions",
+                localField: "owner._id",
+                foreignField: "channel",
+                as: "subscribers",
+            },
+        },
+        {
+            $addFields: {
+                "owner.subscribersCount": { $size: "$subscribers" },
+            },
+        },
+        {
             $project: {
                 title: 1,
                 description: 1,
@@ -180,6 +194,7 @@ export const handlePlayVideo = async (req, res) => {
                     username: 1,
                     fullName: 1,
                     avatar: 1,
+                    subscribersCount: 1,
                 },
             },
         },
