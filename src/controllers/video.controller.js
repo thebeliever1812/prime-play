@@ -177,8 +177,29 @@ export const handlePlayVideo = async (req, res) => {
             },
         },
         {
+            $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "video",
+                as: "likes",
+            },
+        },
+        {
             $addFields: {
                 "owner.subscribersCount": { $size: "$subscribers" },
+                likesCount: { $size: "$likes" },
+                isLiked: {
+                    $cond: {
+                        if: {
+                            $in: [
+                                new mongoose.Types.ObjectId(req.user?._id),
+                                "$likes.likedBy",
+                            ],
+                        },
+                        then: true,
+                        else: false,
+                    },
+                },
             },
         },
         {
@@ -196,6 +217,8 @@ export const handlePlayVideo = async (req, res) => {
                     avatar: 1,
                     subscribersCount: 1,
                 },
+                likesCount: 1,
+                isLiked: 1,
             },
         },
     ]);

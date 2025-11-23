@@ -553,7 +553,12 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 videosCount: { $size: "$myVideos" },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [new mongoose.Types.ObjectId(req.user?._id), "$subscribers.subscriber"] },
+                        if: {
+                            $in: [
+                                new mongoose.Types.ObjectId(req.user?._id),
+                                "$subscribers.subscriber",
+                            ],
+                        },
                         then: true,
                         else: false,
                     },
@@ -586,7 +591,7 @@ export const handleGetUserChannelProfile = async (req, res) => {
                 200,
                 "User channel fetched successfully",
                 channel[0]
-            )                          
+            )
         );
 };
 
