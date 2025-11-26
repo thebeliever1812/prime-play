@@ -359,6 +359,7 @@ export const handleGetLikedVideos = async (req, res) => {
                     videoFile: 1,
                     duration: 1,
                     views: 1,
+                    createdAt: 1,
                 },
             },
         },
