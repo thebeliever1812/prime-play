@@ -343,16 +343,16 @@ export const handleGetLikedVideos = async (req, res) => {
                 from: "videos",
                 localField: "video",
                 foreignField: "_id",
-                as: "likedVideos",
+                as: "likedVideo",
             },
         },
         {
-            $unwind: "$likedVideos",
+            $unwind: "$likedVideo",
         },
         {
             $project: {
                 createdAt: 1,
-                likedVideos: {
+                likedVideo: {
                     _id: 1,
                     title: 1,
                     description: 1,
