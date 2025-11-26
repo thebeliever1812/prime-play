@@ -6,6 +6,7 @@ import {
     handlePlayVideo,
     handleGetAllVideos,
     handleGetChannelVideos,
+    handleGetLikedVideos,
 } from "../controllers/video.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -32,5 +33,7 @@ router.route("/channel-videos/:username").get(asyncHandler(handleGetChannelVideo
 router.route("/all-videos").get(asyncHandler(handleGetAllVideos));
 
 router.route("/play-video/:videoId").get(asyncHandler(handlePlayVideo));
+
+router.route("/liked-videos").get(asyncHandler(handleGetLikedVideos));
 
 export default router;

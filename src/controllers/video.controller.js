@@ -5,7 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
-import { size } from "zod";
+import { Like } from "../models/like.model.js";
 
 export const handleUploadVideo = async (req, res) => {
     if (!req.user) {
@@ -108,7 +108,6 @@ export const handleGetMyVideos = async (req, res) => {
         );
     }
 
-    console.log(req.user);
     const videos = await Video.aggregate([
         {
             $match: { owner: new mongoose.Types.ObjectId(req.user._id) },
@@ -311,5 +310,64 @@ export const handleGetChannelVideos = async (req, res) => {
 
     res.status(200).json(
         new ApiResponse(200, "Videos fetched successfully", videos)
+    );
+};
+
+export const handleGetLikedVideos = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, Please login to view liked videos"
+        );
+    }
+
+    const userId = req.user._id;
+
+    if (!userId) {
+        throw new ApiError(400, "User ID is required");
+    }
+
+    const likedVideos = await Like.aggregate([
+        {
+            $match: {
+                likedBy: new mongoose.Types.ObjectId(userId),
+            },
+        },
+        {
+            $sort: {
+                createdAt: -1,
+            },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "video",
+                foreignField: "_id",
+                as: "likedVideos",
+            },
+        },
+        {
+            $unwind: "$likedVideos",
+        },
+        {
+            $project: {
+                likedVideos: {
+                    title: 1,
+                    description: 1,
+                    thumbnail: 1,
+                    videoFile: 1,
+                    duration: 1,
+                    views: 1,
+                },
+            },
+        },
+    ]);
+
+    if (likedVideos.length === 0) {
+        throw new ApiError(404, "No liked videos found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, "Liked videos fetched successfully", likedVideos)
     );
 };
