@@ -353,6 +353,7 @@ export const handleGetLikedVideos = async (req, res) => {
             $project: {
                 createdAt: 1,
                 likedVideos: {
+                    _id: 1,
                     title: 1,
                     description: 1,
                     thumbnail: 1,
