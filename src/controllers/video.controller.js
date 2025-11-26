@@ -351,6 +351,7 @@ export const handleGetLikedVideos = async (req, res) => {
         },
         {
             $project: {
+                createdAt: 1,
                 likedVideos: {
                     title: 1,
                     description: 1,
