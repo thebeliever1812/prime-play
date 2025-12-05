@@ -655,3 +655,80 @@ export const handleWatchHistory = async (req, res) => {
             )
         );
 };
+
+export const handleGetChannelStats = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to get channel stats"
+        );
+    }
+
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).select("-password -refreshToken");
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const userStats = await User.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+            $lookup: {
+                from: "likes",
+                localField: "myVideos",
+                foreignField: "video",
+                as: "likes",
+            },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "myVideos",
+                foreignField: "_id",
+                as: "myVideos",
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+            },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscriptions",
+            },
+        },
+        {
+            $addFields: {
+                totalLikes: { $size: "$likes" },
+                totalViews: { $sum: "$myVideos.views" },
+                totalSubscribers: { $size: "$subscribers" },
+                totalSubscriptions: { $size: "$subscriptions" },
+            },
+        },
+        {
+            $project: {
+                totalLikes: 1,
+                totalViews: 1,
+                totalSubscribers: 1,
+                totalSubscriptions: 1,
+            },
+        },
+    ]);
+
+    if (!userStats?.length) {
+        throw new ApiError(404, "User stats not found");
+    }
+
+    res.status(200).json(new ApiResponse(200, "Channel stats fetched", userStats[0]));
+};

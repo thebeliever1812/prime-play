@@ -13,6 +13,7 @@ import {
     handleDeleteCoverImage,
     handleGetUserChannelProfile,
     handleWatchHistory,
+    handleGetChannelStats
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -64,5 +65,7 @@ router
     .get(asyncHandler(handleGetUserChannelProfile));
 
 router.route("/history").get(asyncHandler(handleWatchHistory));
+
+router.route("/channel-stats").get(asyncHandler(handleGetChannelStats));
 
 export default router;
