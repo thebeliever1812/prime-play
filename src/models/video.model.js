@@ -39,6 +39,12 @@ const VideoSchema = new Schema(
             type: Boolean,
             default: true,
         },
+        viewers: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         owner: {
             type: Schema.Types.ObjectId,
             ref: "User",
@@ -47,6 +53,6 @@ const VideoSchema = new Schema(
     { timestamps: true }
 );
 
-VideoSchema.plugin(mongooseAggregatePaginate)
+VideoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video = model("Video", VideoSchema);

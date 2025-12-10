@@ -732,3 +732,38 @@ export const handleGetChannelStats = async (req, res) => {
 
     res.status(200).json(new ApiResponse(200, "Channel stats fetched", userStats[0]));
 };
+
+export const handleDeleteFromHistory = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to delete from watch history"
+        );
+    }
+
+    const { videoId } = req.params;
+
+    if (!videoId?.trim()) {
+        throw new ApiError(400, "Video ID is required");
+    }
+
+    const user = await User.findById(req.user?._id)
+
+    if (!user) {
+        throw new ApiError(404, "User not found while deleting from history");
+    }
+
+    const isVideoInHistory = user.watchHistory.includes(videoId);
+
+    if (!isVideoInHistory) {
+        throw new ApiError(400, "Video not found in watch history");
+    }
+
+    user.watchHistory = user.watchHistory.filter(
+        (id) => id.toString() !== videoId.toString()
+    );
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json(new ApiResponse(200, "Video deleted from watch history"));
+}
