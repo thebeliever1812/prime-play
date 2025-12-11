@@ -730,7 +730,9 @@ export const handleGetChannelStats = async (req, res) => {
         throw new ApiError(404, "User stats not found");
     }
 
-    res.status(200).json(new ApiResponse(200, "Channel stats fetched", userStats[0]));
+    res.status(200).json(
+        new ApiResponse(200, "Channel stats fetched", userStats[0])
+    );
 };
 
 export const handleDeleteFromHistory = async (req, res) => {
@@ -747,7 +749,7 @@ export const handleDeleteFromHistory = async (req, res) => {
         throw new ApiError(400, "Video ID is required");
     }
 
-    const user = await User.findById(req.user?._id)
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
         throw new ApiError(404, "User not found while deleting from history");
@@ -765,5 +767,147 @@ export const handleDeleteFromHistory = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    res.status(200).json(new ApiResponse(200, "Video deleted from watch history"));
-}
+    res.status(200).json(
+        new ApiResponse(200, "Video deleted from watch history")
+    );
+};
+
+export const handleGetSubscribers = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to get subscribers"
+        );
+    }
+
+    const userId = req.user._id;
+
+    const subscribers = await User.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "subscriber",
+                            foreignField: "_id",
+                            as: "subscriber",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $addFields: {
+                            subscriber: { $first: "$subscriber" },
+                        },
+                    },
+                    {
+                        $sort: {
+                            createdAt: -1,
+                        },
+                    },
+                    {
+                        $project: {
+                            subscriber: 1,
+                            createdAt: 1,
+                        },
+                    },
+                ],
+            },
+        },
+    ]);
+
+    if (subscribers.length === 0) {
+        throw new ApiError(404, "No subscribers found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, "Subscribers fetched", subscribers[0].subscribers)
+    );
+};
+
+export const handleGetSubscription = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to get subscription details"
+        );
+    }
+
+    const userId = req.user._id;
+
+    const subscriptions = await User.aggregate([
+        {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscriptions",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "channel",
+                            foreignField: "_id",
+                            as: "subscription",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $addFields: {
+                            subscription: { $first: "$subscription" },
+                        },
+                    },
+                    {
+                        $sort: {
+                            createdAt: -1,
+                        },
+                    },
+                    {
+                        $project: {
+                            subscription: 1,
+                            createdAt: 1,
+                        },
+                    },
+                ],
+            },
+        },
+    ]);
+
+    if (subscriptions.length === 0) {
+        throw new ApiError(404, "No subscription found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            "subscriptions fetched",
+            subscriptions[0].subscriptions
+        )
+    );
+};

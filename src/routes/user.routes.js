@@ -15,6 +15,8 @@ import {
     handleWatchHistory,
     handleGetChannelStats,
     handleDeleteFromHistory,
+    handleGetSubscribers,
+    handleGetSubscription,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -72,5 +74,9 @@ router.route("/channel-stats").get(asyncHandler(handleGetChannelStats));
 router
     .route("/delete-from-history/:videoId")
     .delete(asyncHandler(handleDeleteFromHistory));
+
+router.route("/subscribers").get(asyncHandler(handleGetSubscribers));
+
+router.route("/subscriptions").get(asyncHandler(handleGetSubscription));
 
 export default router;

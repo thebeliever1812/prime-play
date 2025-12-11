@@ -124,6 +124,7 @@ export const handleGetMyVideos = async (req, res) => {
                 duration: 1,
                 createdAt: 1,
                 views: 1,
+                owner: 1,
             },
         },
     ]);
@@ -154,7 +155,7 @@ export const handlePlayVideo = async (req, res) => {
 
         if (!isAlreadyViewed) {
             videoDetails.viewers.push(req.user._id);
-            videoDetails.views += 1
+            videoDetails.views += 1;
             await videoDetails.save({ validateBeforeSave: false });
         }
     }
@@ -378,4 +379,30 @@ export const handleGetLikedVideos = async (req, res) => {
     res.status(200).json(
         new ApiResponse(200, "Liked videos fetched successfully", likedVideos)
     );
+};
+
+export const handleDeleteVideo = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(401, "Unauthorized, Please login to delete video");
+    }
+
+    const { videoId } = req.params;
+
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required");
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    user.myVideos = user.myVideos.filter((id) => id.toString() !== videoId);
+
+    await user.save({ validateBeforeSave: false });
+
+    await Video.findByIdAndDelete(videoId);
+
+    res.status(200).json(new ApiResponse(200, "Video deleted successfully"));
 };
