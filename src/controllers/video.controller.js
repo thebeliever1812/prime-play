@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 import { Like } from "../models/like.model.js";
+import fs from "fs";
 
 export const handleUploadVideo = async (req, res) => {
     if (!req.user) {
@@ -13,14 +14,31 @@ export const handleUploadVideo = async (req, res) => {
     }
 
     const { title, description } = req.body;
+    const { thumbnail, videoFile } = req.files || {};
 
-    if ([title, description].some((field) => !field?.trim())) {
-        throw new ApiError(400, "All fields are required");
+    if (!title?.trim() || !description?.trim()) {
+        throw new ApiError(400, "Title and description are required");
     }
 
-    const result = VideoUploadSchema.safeParse({ title, description });
+    if (!thumbnail || !thumbnail.length || !videoFile || !videoFile.length) {
+        throw new ApiError(400, "Thumbnail and video file are required");
+    }
+
+    const result = VideoUploadSchema.safeParse({
+        title,
+        description,
+        thumbnail: thumbnail[0],
+        videoFile: videoFile[0],
+    });
 
     if (!result.success) {
+        if (thumbnail?.[0]?.path) {
+            fs.unlinkSync(thumbnail[0].path);
+        }
+
+        if (videoFile?.[0]?.path) {
+            fs.unlinkSync(videoFile[0].path);
+        }
         throw new ApiError(
             400,
             result.error.issues.map(
@@ -31,14 +49,8 @@ export const handleUploadVideo = async (req, res) => {
 
     const validatedData = result.data;
 
-    const { thumbnail, videoFile } = req.files;
-
-    if (!thumbnail || !videoFile) {
-        throw new ApiError(400, "Both thumbnail and video file are required");
-    }
-
-    const thumbnailLocalPath = thumbnail[0]?.path;
-    const videoFileLocalPath = videoFile[0]?.path;
+    const thumbnailLocalPath = validatedData.thumbnail.path;
+    const videoFileLocalPath = validatedData.videoFile.path;
 
     if (!thumbnailLocalPath || !videoFileLocalPath) {
         throw new ApiError(
