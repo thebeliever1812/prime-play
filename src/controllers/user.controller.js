@@ -13,6 +13,9 @@ import {
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { Like } from "../models/like.model.js";
+import { Subscription } from "../models/subscription.model.js";
+import { Video } from "../models/video.model.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     if (!userId) {
@@ -913,20 +916,42 @@ export const handleGetSubscription = async (req, res) => {
 };
 
 export const handleDeleteUserAccount = async (req, res) => {
-    if (!req.user) {
-        throw new ApiError(
-            401,
-            "Unauthorized, please login to delete your account"
-        );
+    const session = await mongoose.startSession();
+
+    try {
+        if (!req.user) {
+            throw new ApiError(
+                401,
+                "Unauthorized, please login to delete your account"
+            );
+        }
+
+        session.startTransaction();
+
+        await Like.deleteMany({ likedBy: req.user._id }).session(session);
+
+        await Subscription.deleteMany({
+            $or: [{ subscriber: req.user._id }, { channel: req.user._id }],
+        }).session(session);
+
+        await Video.deleteMany({ owner: req.user._id }).session(session);
+
+        const deletedUser = await User.findByIdAndDelete(req.user._id, {
+            session,
+        });
+
+        if (!deletedUser) {
+            throw new ApiError(404, "User not found while deleting account");
+        }
+
+        await session.commitTransaction();
+
+        res.status(200)
+            .clearCookie("accessToken", global.accessTokenCookieOptions)
+            .clearCookie("refreshToken", global.refreshTokenCookieOptions)
+            .json(new ApiResponse(200, "Account deleted successfully"));
+    } finally {
+        // ALWAYS runs (success or error)
+        await session.endSession();
     }
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-        throw new ApiError(404, "User not found while deleting account");
-    }
-
-    await User.deleteOne({ _id: req.user._id });
-
-    res.status(200).json(new ApiResponse(200, "Account deleted successfully"));
 };
