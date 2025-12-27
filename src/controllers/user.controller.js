@@ -911,3 +911,22 @@ export const handleGetSubscription = async (req, res) => {
         )
     );
 };
+
+export const handleDeleteUserAccount = async (req, res) => {
+    if (!req.user) {
+        throw new ApiError(
+            401,
+            "Unauthorized, please login to delete your account"
+        );
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found while deleting account");
+    }
+
+    await User.deleteOne({ _id: req.user._id });
+
+    res.status(200).json(new ApiResponse(200, "Account deleted successfully"));
+};

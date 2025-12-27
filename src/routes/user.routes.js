@@ -17,6 +17,7 @@ import {
     handleDeleteFromHistory,
     handleGetSubscribers,
     handleGetSubscription,
+    handleDeleteUserAccount,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -78,5 +79,7 @@ router
 router.route("/subscribers").get(asyncHandler(handleGetSubscribers));
 
 router.route("/subscriptions").get(asyncHandler(handleGetSubscription));
+
+router.route("/delete-account").delete(asyncHandler(handleDeleteUserAccount));
 
 export default router;
