@@ -106,7 +106,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ _id, title, uploadDate, thumbnail
                             />
                         </div>
                     )}
-                    <div className=''>
+                    <div className='w-full'>
                         <h2 className='font-semibold text-lg'>{title.length > 55 ? `${title.substring(0, 55)}...` : title}</h2>
                         <span className='text-xs text-gray-500'>{fullName}</span>
                         <div className='w-full flex items-center justify-between mt-1'>
