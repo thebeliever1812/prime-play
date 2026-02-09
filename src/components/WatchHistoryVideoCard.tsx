@@ -118,7 +118,7 @@ const WatchHistoryVideoCard: React.FC<WatchHistoryVideoCardProps> = ({ _id, titl
 
                 {/* Duration badge */}
                 {duration && (
-                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-foreground/80 text-background text-xs font-medium rounded flex items-center gap-1">
+                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/50 text-white text-xs font-medium rounded flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {formatDuration(duration)}
                     </div>
