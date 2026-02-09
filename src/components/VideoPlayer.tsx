@@ -64,7 +64,7 @@ interface ChannelData {
     isSubscribed: boolean;
     subscribersCount: number;
     username: string;
-
+    videosCount: number;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
@@ -172,16 +172,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
         }
     }, [id]);
 
-
     useEffect(() => {
-        fetchComments();
-    }, [id, fetchComments]);
+        if (videoData) {
+            fetchComments();
+        }
+    }, [id, videoData, fetchComments]);
 
     // Subscription details k liy
     useEffect(() => {
         const fetchChannelData = async () => {
             try {
-                const response = await api.get(`/user/channel/${user?.username}`);
+                const response = await api.get(`/user/channel/${videoData?.owner.username}`);
+                console.log(response.data?.data)
                 setChannelData(response.data?.data)
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -197,7 +199,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
         if (isAuthenticated) {
             fetchChannelData()
         }
-    }, [user?.username, isAuthenticated])
+    }, [videoData?.owner.username, isAuthenticated])
 
     useEffect(() => {
         const video = videoRef.current;
@@ -358,6 +360,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
             percentage * videoRef.current.duration;
     };
 
+    const handleTimeUpdate = (videoData: VideoData) => {
+        if (!videoRef.current) return;
+
+        const current = videoRef.current.currentTime;
+        setVideoPercentage(videoProgressInPercentage(current, videoData.duration));
+        setCurrentVideoTime(formatTime(current));
+    };
 
     if (loadingVideo) {
         return (<Container className="max-w-6xl flex justify-center items-center">
@@ -381,6 +390,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
                             src={videoData.videoFile}
                             className='w-full h-full rounded-2xl'
                             ref={videoRef}
+                            preload="metadata"
                             autoPlay
                             muted
                             playsInline
@@ -388,13 +398,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
                             onEnded={() => setIsPlaying(false)}
-                            onTimeUpdate={() => {
-                                if (videoRef.current) {
-                                    const formattedTime = formatTime(videoRef.current?.currentTime || 0);
-                                    setVideoPercentage(videoProgressInPercentage(videoRef.current.currentTime, videoData.duration));
-                                    setCurrentVideoTime(formattedTime);
-                                }
-                            }}
+                            onTimeUpdate={() => handleTimeUpdate(videoData)}
                         />
                         {/* Custom Controls */}
                         <div className={`absolute bottom-0 left-0 right-0 transition-opacity duration-300 ${showCustomControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
@@ -428,7 +432,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
                             {/* Progress Bar */}
                             <div className='absolute -top-1 sm:-top-1.5 bg-gray-400/25 h-1 sm:h-1.5 rounded-t-lg w-full z-40 cursor-pointer' ref={progressRef}
                                 onClick={handleSeek}>
-                                <div className="transition-all h-1 sm:h-1.5 rounded-r-full bg-[#4F46E5] duration-250 ease-linear z-50" style={{ width: `${videoPercentage}%` }}>
+                                <div className="transition-all h-1 sm:h-1.5 rounded-r-full bg-[#4F46E5] ease-linear z-50 duration-250" style={{ width: `${videoPercentage}%` }}>
                                 </div>
                             </div>
                         </div>
@@ -457,7 +461,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
                                     <p className='text-sm text-gray-600'>{videoData.owner.subscribersCount} subscribers</p>
                                 </div>
                             </div>
-                            <SubscriptionForm isSubscribed={channelData?.isSubscribed || false} channelId={user?._id} />
+                            {
+                                channelData && <SubscriptionForm isSubscribed={channelData.isSubscribed} channelId={channelData._id} />
+                            }
                         </div>
                         <div className='ml-2 mt-4 flex gap-1 items-center'>
                             <LikeForm videoId={id} isLiked={videoData.isLiked} />
@@ -541,7 +547,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ id }) => {
                                                 </div>
                                             )
                                         }
-                                        
+
                                     </div>
                                 </div>
                             ))

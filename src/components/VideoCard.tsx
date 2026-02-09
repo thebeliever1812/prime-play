@@ -70,8 +70,8 @@ const VideoCard: React.FC<VideoCardProps> = ({ _id, title, uploadDate, thumbnail
     }
 
     return (
-        <div className='w-full max-w-md rounded-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-1 cursor-pointer hover:shadow-xl transition-shadow duration-300 group' onClick={() => router.push(`/video/${_id}`)}>
-            <div className='w-full aspect-video rounded-lg relative overflow-hidden '>
+        <div className='w-full max-w-md rounded-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-1 cursor-pointer hover:shadow-xl transition-shadow duration-300 group' onClick={() => router.push(`/video/${_id}`)} role="button">
+            <div className='w-full aspect-video rounded-lg relative overflow-hidden'>
                 <Image
                     src={thumbnail}
                     alt={title}
